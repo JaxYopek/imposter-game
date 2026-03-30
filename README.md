@@ -1,6 +1,6 @@
-# Imposter Game Website
+# Imposter Game
 
-A simple web application for playing the popular "Imposter" word guessing game with friends online.
+I created this simple web version of the "Imposter Game" to make it easy to play with my friends (without leaving anyone out!). I will host it soon so that you can play with your friends as well.
 
 ## Game Rules
 
@@ -12,10 +12,6 @@ A simple web application for playing the popular "Imposter" word guessing game w
 6. After discussion, vote on who you think is the imposter
 
 ## Setup & Installation
-
-### Requirements
-- Python 3.8+
-- pip
 
 ### Backend Setup
 
