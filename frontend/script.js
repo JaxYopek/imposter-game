@@ -8,7 +8,9 @@ let gameState = {
     playerName: null,
     isHost: false,
     isImposter: false,
+    isStartPlayer: false,
     currentWord: null,
+    currentHint: null,
     players: [],
     roundNumber: 0,
     gameMode: null,  // 'category' or 'custom_words'
@@ -93,7 +95,8 @@ function startGame() {
         alert('Please select a category');
         return;
     }
-    socket.emit('start_game', { room_code: gameState.roomCode, mode: 'category', category });
+    const hintsEnabled = document.getElementById('hintsCheckbox').checked;
+    socket.emit('start_game', { room_code: gameState.roomCode, mode: 'category', category, hints_enabled: hintsEnabled });
 }
 
 function selectMode(mode) {
@@ -160,7 +163,9 @@ socket.on('players_updated', (data) => {
 socket.on('game_started', (data) => {
     gameState.currentWord = data.word;
     gameState.isImposter = data.is_imposter;
+    gameState.isStartPlayer = data.is_start_player;
     gameState.roundNumber = data.round;
+    gameState.currentHint = data.hint || null;
     
     switchScreen('playingScreen');
     updateGameDisplay();
@@ -189,8 +194,11 @@ socket.on('round_ended', (data) => {
     switchScreen('waitingScreen');
     updateHostSection();
     document.getElementById('categorySelect').value = '';
+    document.getElementById('hintsCheckbox').checked = false;
     gameState.gameMode = null;
     gameState.wordSubmitted = false;
+    gameState.currentHint = null;
+    gameState.isStartPlayer = false;
 });
 
 // Update functions
@@ -231,6 +239,23 @@ function updateGameDisplay() {
         roleBadge.classList.remove('hidden');
     } else {
         roleBadge.classList.add('hidden');
+    }
+    
+    const startBadge = document.getElementById('startPlayerRole');
+    if (gameState.isStartPlayer) {
+        startBadge.textContent = 'YOU START';
+        startBadge.classList.remove('hidden');
+    } else {
+        startBadge.classList.add('hidden');
+    }
+    
+    // Show hint for imposter if available
+    const hintDisplay = document.getElementById('hintDisplay');
+    if (gameState.isImposter && gameState.currentHint) {
+        document.getElementById('hintText').textContent = gameState.currentHint;
+        hintDisplay.classList.remove('hidden');
+    } else {
+        hintDisplay.classList.add('hidden');
     }
     
     // Only show Next Round button for host

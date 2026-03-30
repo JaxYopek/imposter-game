@@ -12,11 +12,14 @@ class Game:
         self.rooms[code] = {
             'players': {},
             'word': None,
+            'hint': None,
             'imposter_id': None,
+            'start_player_id': None,
             'status': 'waiting',  # waiting, collecting_words, playing, round_ended
             'current_round': 0,
             'mode': None,  # 'category' or 'custom_words'
             'submitted_words': {},  # {player_id: word}
+            'hints_enabled': False,
         }
         return code
     
@@ -63,7 +66,7 @@ class Game:
         """Get list of all available categories"""
         return list(CATEGORIES.keys())
     
-    def start_game(self, room_code, mode, category=None):
+    def start_game(self, room_code, mode, category=None, hints_enabled=False):
         """Start a new round (either with category or custom words mode)"""
         if room_code not in self.rooms:
             return False
@@ -72,21 +75,24 @@ class Game:
         room['mode'] = mode
         room['current_round'] += 1
         room['submitted_words'] = {}  # Reset submitted words
+        room['hints_enabled'] = hints_enabled
+        
+        # Select random imposter and start player
+        player_ids = list(room['players'].keys())
+        if player_ids:
+            room['imposter_id'] = random.choice(player_ids)
+            room['start_player_id'] = random.choice(player_ids)
         
         if mode == 'category':
             # Pick a random word from the category
             if not category:
                 return False
-            word = self.get_word_from_category(category)
-            if not word:
+            word_data = self.get_word_from_category(category)
+            if not word_data:
                 return False
-            room['word'] = word
+            room['word'] = word_data['word']
+            room['hint'] = word_data['hint']
             room['status'] = 'playing'
-            
-            # Select random imposter
-            player_ids = list(room['players'].keys())
-            if player_ids:
-                room['imposter_id'] = random.choice(player_ids)
             return True
         
         elif mode == 'custom_words':
@@ -122,10 +128,11 @@ class Game:
         room['word'] = random.choice(words)
         room['status'] = 'playing'
         
-        # Select random imposter
+        # Select random imposter and start player
         player_ids = list(room['players'].keys())
         if player_ids:
             room['imposter_id'] = random.choice(player_ids)
+            room['start_player_id'] = random.choice(player_ids)
         return True
     
     
@@ -136,13 +143,21 @@ class Game:
         
         room = self.rooms[room_code]
         is_imposter = player_id == room.get('imposter_id')
+        is_start_player = player_id == room.get('start_player_id')
         
-        return {
+        view = {
             'word': 'IMPOSTER' if is_imposter else room['word'],
             'is_imposter': is_imposter,
+            'is_start_player': is_start_player,
             'round': room['current_round'],
             'status': room['status'],
         }
+        
+        # Add hint for imposter if enabled
+        if is_imposter and room.get('hints_enabled') and room.get('hint'):
+            view['hint'] = room['hint']
+        
+        return view
     
     def next_round(self, room_code):
         """End current round without starting a new one"""
@@ -152,9 +167,11 @@ class Game:
         room = self.rooms[room_code]
         room['status'] = 'waiting'
         room['word'] = None
+        room['hint'] = None
         room['imposter_id'] = None
         room['mode'] = None
         room['submitted_words'] = {}
+        room['hints_enabled'] = False
         return True
 
 # Global game instance

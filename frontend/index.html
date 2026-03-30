@@ -52,6 +52,12 @@
                         <select id="categorySelect" class="input">
                             <option value="">-- Select a Category --</option>
                         </select>
+                        
+                        <div class="checkbox-container">
+                            <input type="checkbox" id="hintsCheckbox">
+                            <label for="hintsCheckbox">Give imposter a hint</label>
+                        </div>
+                        
                         <button onclick="startGame('category')" class="btn btn-primary">Start Game</button>
                     </div>
                 </div>
@@ -80,7 +86,13 @@
                     <h1 id="wordOrImposter">WORD</h1>
                 </div>
                 
+                <div id="hintDisplay" class="hint-display hidden">
+                    <p><strong>Hint:</strong> <span id="hintText"></span></p>
+                </div>
+                
                 <div id="playerRole" class="role-badge hidden"></div>
+                <div id="startPlayerRole" class="role-badge start-badge hidden"></div>
+                
                 <div id="nextRoundSection" class="hidden">
                     <button onclick="nextRound()" class="btn btn-primary">Next Round</button>
                 </div>

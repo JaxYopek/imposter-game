@@ -67,13 +67,14 @@ def on_start_game(data):
     room_code = data.get('room_code')
     mode = data.get('mode')  # 'category' or 'custom_words'
     category = data.get('category')
+    hints_enabled = data.get('hints_enabled', False)
     
     if mode == 'category':
         if not category:
             emit('error', {'message': 'Please select a category'})
             return
         
-        if game.start_game(room_code, mode, category):
+        if game.start_game(room_code, mode, category, hints_enabled):
             # Send game view to all players
             players = game.get_players(room_code)
             for pid, player_data in players:
@@ -83,7 +84,7 @@ def on_start_game(data):
             emit('error', {'message': 'Failed to start game'})
     
     elif mode == 'custom_words':
-        if game.start_game(room_code, mode):
+        if game.start_game(room_code, mode, hints_enabled=hints_enabled):
             # Notify all players that word collection has started
             socketio.emit('words_collection_started', {}, to=room_code)
         else:
