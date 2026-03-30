@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Imposter Game</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Join/Create Room Screen -->
+        <div id="joinScreen" class="screen active">
+            <div class="card">
+                <h1>Imposter Game</h1>
+                <input type="text" id="playerName" placeholder="Enter your name" class="input">
+                
+                <div class="button-group">
+                    <button onclick="createRoom()" class="btn btn-primary">Create Room</button>
+                    <button onclick="toggleJoinForm()" class="btn btn-secondary">Join Room</button>
+                </div>
+                
+                <div id="joinForm" class="hidden">
+                    <input type="text" id="roomCode" placeholder="Enter room code" class="input uppercase">
+                    <button onclick="joinRoom()" class="btn btn-primary">Join</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Waiting Room Screen -->
+        <div id="waitingScreen" class="screen">
+            <div class="card">
+                <h2>Room Code: <span id="displayRoomCode" class="highlight"></span></h2>
+                
+                <div class="section">
+                    <h3>Players in Room:</h3>
+                    <ul id="playersList" class="players-list"></ul>
+                </div>
+                
+                <div id="hostSection" class="hidden">
+                    <div class="section">
+                        <label>Choose game mode:</label>
+                        <div class="mode-buttons">
+                            <button onclick="selectMode('category')" class="btn btn-secondary" id="modeCategory">Use Categories</button>
+                            <button onclick="selectMode('custom_words')" class="btn btn-secondary" id="modeCustom">Custom Words</button>
+                        </div>
+                    </div>
+                    
+                    <div id="categorySection" class="section hidden">
+                        <label>Choose a category:</label>
+                        <select id="categorySelect" class="input">
+                            <option value="">-- Select a Category --</option>
+                        </select>
+                        <button onclick="startGame('category')" class="btn btn-primary">Start Game</button>
+                    </div>
+                </div>
+                
+                <button onclick="leaveRoom()" class="btn btn-danger">Leave Room</button>
+            </div>
+        </div>
+
+        <!-- Word Submission Screen -->
+        <div id="wordSubmissionScreen" class="screen">
+            <div class="card">
+                <h2>Submit Your Word</h2>
+                <p>Everyone must submit a word. The game will randomly choose one!</p>
+                
+                <input type="text" id="playerWordInput" placeholder="Enter a word" class="input">
+                <button onclick="submitWord()" class="btn btn-primary">Submit Word</button>
+            </div>
+        </div>
+
+        <!-- Playing Screen -->
+        <div id="playingScreen" class="screen">
+            <div class="card">
+                <h2>Round <span id="roundNumber"></span></h2>
+                
+                <div class="word-display">
+                    <h1 id="wordOrImposter">WORD</h1>
+                </div>
+                
+                <div id="playerRole" class="role-badge hidden"></div>
+                <div id="nextRoundSection" class="hidden">
+                    <button onclick="nextRound()" class="btn btn-primary">Next Round</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
