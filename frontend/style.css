@@ -61,6 +61,29 @@ h3 {
     color: #555;
 }
 
+.instructions {
+    background: #f0f7ff;
+    padding: 20px;
+    border-radius: 6px;
+    margin-bottom: 25px;
+}
+
+.instructions h3 {
+    margin-top: 0;
+    color: #667eea;
+}
+
+.instructions ol {
+    margin: 0;
+    padding-left: 25px;
+    color: #555;
+    line-height: 1.8;
+}
+
+.instructions li {
+    margin-bottom: 10px;
+}
+
 .input {
     width: 100%;
     padding: 12px;
