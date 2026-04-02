@@ -1,21 +1,71 @@
 from flask import Flask, render_template, request, jsonify, send_from_directory
 from flask_socketio import SocketIO, emit, join_room, leave_room
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from game import game
 import uuid
 import os
+import re
+import logging
+from dotenv import load_dotenv
+
+load_dotenv()
+
+# Set up logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 frontend_dir = os.path.join(os.path.dirname(__file__), '../frontend')
 app = Flask(__name__, static_folder=frontend_dir, static_url_path='', template_folder=frontend_dir)
-socketio = SocketIO(app, cors_allowed_origins="*")
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-key-change-in-production')
+
+# Configure CORS with allowed origins
+allowed_origins = os.getenv('ALLOWED_ORIGINS', 'http://localhost:3000').split(',')
+socketio = SocketIO(
+    app,
+    cors_allowed_origins=allowed_origins,
+    ping_timeout=60,
+    ping_interval=25
+)
+
+# Rate limiter
+limiter = Limiter(
+    app=app,
+    key_func=get_remote_address,
+    default_limits=["200 per day", "50 per hour"]
+)
 
 # Store active sessions
 sessions = {}
+
+# Input validation helpers
+def validate_player_name(name):
+    """Validate player name: alphanumeric + spaces, max 20 chars"""
+    if not name or not isinstance(name, str):
+        return False
+    name = name.strip()
+    if len(name) < 1 or len(name) > 20:
+        return False
+    return bool(re.match(r'^[a-zA-Z0-9\s\-_]+$', name))
+
+def validate_word(word):
+    """Validate word: alphanumeric + spaces, max 30 chars"""
+    if not word or not isinstance(word, str):
+        return False
+    word = word.strip()
+    if len(word) < 1 or len(word) > 30:
+        return False
+    return bool(re.match(r'^[a-zA-Z0-9\s\-_]+$', word))
 
 @app.route('/')
 def index():
     return send_from_directory(frontend_dir, 'index.html')
 
 @app.route('/api/categories')
+@limiter.limit("30 per minute")
 def get_categories():
     """Get list of available word categories"""
     categories = game.get_categories()
@@ -34,29 +84,44 @@ def on_disconnect():
 
 @socketio.on('create_room')
 def on_create_room(data):
-    player_name = data.get('name', 'Anonymous')
+    player_name = data.get('name', 'Anonymous').strip()
+    
+    # Validate player name
+    if not validate_player_name(player_name):
+        emit('error', {'message': 'Invalid player name'})
+        logger.warning(f'Invalid player name attempt: {player_name}')
+        return
+    
     room_code = game.create_room()
     player_id = sessions[request.sid]
     
     game.add_player(room_code, player_id, player_name)
     join_room(room_code)
     
+    logger.info(f'Room created: {room_code} by {player_name}')
     emit('room_created', {'room_code': room_code}, to=request.sid)
     emit_players_update(room_code)
 
 @socketio.on('join_room')
 def on_join_room(data):
-    room_code = data.get('room_code').upper()
-    player_name = data.get('name', 'Anonymous')
+    room_code = data.get('room_code', '').upper().strip()
+    player_name = data.get('name', 'Anonymous').strip()
     player_id = sessions.get(request.sid)
+    
+    # Validate player name
+    if not validate_player_name(player_name):
+        emit('error', {'message': 'Invalid player name'})
+        return
     
     room = game.get_room(room_code)
     if not room:
         emit('error', {'message': 'Room not found'})
+        logger.warning(f'Join attempt on non-existent room: {room_code}')
         return
     
     if game.add_player(room_code, player_id, player_name):
         join_room(room_code)
+        logger.info(f'Player {player_name} joined room {room_code}')
         emit('room_joined', {'room_code': room_code}, to=request.sid)
         emit_players_update(room_code)
     else:
@@ -99,8 +164,10 @@ def on_submit_word(data):
     word = data.get('word', '').strip()
     player_id = sessions.get(request.sid)
     
-    if not word:
-        emit('error', {'message': 'Word cannot be empty'})
+    # Validate word
+    if not validate_word(word):
+        emit('error', {'message': 'Invalid word'})
+        logger.warning(f'Invalid word submission attempt: {word}')
         return
     
     if game.submit_word(room_code, player_id, word):
@@ -176,4 +243,12 @@ def get_sid_for_player(room_code, player_id):
     return None
 
 if __name__ == '__main__':
-    socketio.run(app, debug=True, host='0.0.0.0', port=5000)
+    flask_env = os.getenv('FLASK_ENV', 'production')
+    debug_mode = flask_env == 'development'
+    host = os.getenv('HOST', '127.0.0.1')
+    port = int(os.getenv('PORT', 5000))
+    
+    if debug_mode:
+        logger.warning('Running in DEVELOPMENT mode')
+    
+    socketio.run(app, debug=debug_mode, host=host, port=port)

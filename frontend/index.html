@@ -14,7 +14,7 @@
         <div id="joinScreen" class="screen active">
             <div class="card">
                 <h1>Imposter Game</h1>
-                <input type="text" id="playerName" placeholder="Enter your name" class="input">
+                <input type="text" maxlength="10" id="playerName" placeholder="Enter your name" class="input">
                 
                 <div class="button-group">
                     <button onclick="createRoom()" class="btn btn-primary">Create Room</button>
@@ -22,7 +22,7 @@
                 </div>
                 
                 <div id="joinForm" class="hidden">
-                    <input type="text" id="roomCode" placeholder="Enter room code" class="input uppercase">
+                    <input type="text" maxlength="4" id="roomCode" placeholder="Enter room code" class="input uppercase">
                     <button onclick="joinRoom()" class="btn btn-primary">Join</button>
                 </div>
             </div>

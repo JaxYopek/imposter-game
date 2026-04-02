@@ -7,8 +7,8 @@ class Game:
         self.rooms = {}
     
     def create_room(self):
-        """Generate a random room code"""
-        code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=4))
+        """Generate a random room code (6 characters for better entropy)"""
+        code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
         self.rooms[code] = {
             'players': {},
             'word': None,
