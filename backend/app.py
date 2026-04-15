@@ -23,19 +23,23 @@ app = Flask(__name__, static_folder=frontend_dir, static_url_path='', template_f
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'dev-key-change-in-production')
 
 # Configure CORS with allowed origins
-allowed_origins = os.getenv('ALLOWED_ORIGINS', 'http://localhost:3000').split(',')
+allowed_origins = os.getenv('ALLOWED_ORIGINS', 'https://imposter-game-3aac3a0a51cb.herokuapp.com').split(',')
 socketio = SocketIO(
     app,
     cors_allowed_origins=allowed_origins,
     ping_timeout=60,
-    ping_interval=25
+    ping_interval=25,
+    async_mode='eventlet',
+    engineio_logger=False,
+    socketio_logger=False
 )
 
 # Rate limiter
 limiter = Limiter(
     app=app,
     key_func=get_remote_address,
-    default_limits=["200 per day", "50 per hour"]
+    default_limits=["200 per day", "50 per hour"],
+    storage_uri=os.getenv('RATELIMIT_STORAGE_URI', 'memory://')
 )
 
 # Store active sessions
@@ -63,6 +67,10 @@ def validate_word(word):
 @app.route('/')
 def index():
     return send_from_directory(frontend_dir, 'index.html')
+
+@app.route('/healthz')
+def healthz():
+    return jsonify({'status': 'ok'}), 200
 
 @app.route('/api/categories')
 @limiter.limit("30 per minute")
@@ -151,7 +159,7 @@ def on_start_game(data):
     elif mode == 'custom_words':
         if game.start_game(room_code, mode, hints_enabled=hints_enabled):
             # Notify all players that word collection has started
-            socketio.emit('words_collection_started', {}, to=room_code)
+            socketio.emit('words_collection_started', {'hints_enabled': hints_enabled}, to=room_code)
         else:
             emit('error', {'message': 'Failed to start word collection'})
     
@@ -162,6 +170,7 @@ def on_start_game(data):
 def on_submit_word(data):
     room_code = data.get('room_code')
     word = data.get('word', '').strip()
+    hint = data.get('hint', '').strip() if data.get('hint') else None
     player_id = sessions.get(request.sid)
     
     # Validate word
@@ -170,7 +179,13 @@ def on_submit_word(data):
         logger.warning(f'Invalid word submission attempt: {word}')
         return
     
-    if game.submit_word(room_code, player_id, word):
+    # Validate hint if provided
+    if hint and not validate_word(hint):
+        emit('error', {'message': 'Invalid hint'})
+        logger.warning(f'Invalid hint submission attempt: {hint}')
+        return
+    
+    if game.submit_word(room_code, player_id, word, hint):
         # Notify all players that a word was submitted
         room = game.get_room(room_code)
         submitted_count = len(room['submitted_words'])
@@ -245,10 +260,12 @@ def get_sid_for_player(room_code, player_id):
 if __name__ == '__main__':
     flask_env = os.getenv('FLASK_ENV', 'production')
     debug_mode = flask_env == 'development'
-    host = os.getenv('HOST', '127.0.0.1')
+    host = os.getenv('HOST', '0.0.0.0')
     port = int(os.getenv('PORT', 5000))
     
     if debug_mode:
         logger.warning('Running in DEVELOPMENT mode')
+    else:
+        logger.info('Running in PRODUCTION mode')
     
     socketio.run(app, debug=debug_mode, host=host, port=port)
