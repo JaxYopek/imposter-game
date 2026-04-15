@@ -140,6 +140,17 @@ function updateModeButtonsState() {
     modeCustomButton.setAttribute('aria-pressed', customSelected ? 'true' : 'false');
 }
 
+function updateWordSubmissionStatus(remaining) {
+    const status = document.getElementById('wordSubmissionStatus');
+    if (!status) {
+        return;
+    }
+
+    const parsed = Number(remaining);
+    const safeRemaining = Number.isFinite(parsed) ? Math.max(Math.floor(parsed), 0) : 0;
+    status.innerHTML = `Players remaining: <span class="remaining-count">${safeRemaining}</span>`;
+}
+
 function submitWord() {
     if (gameState.wordSubmitted || gameState.wordSubmitting) {
         return;
@@ -226,18 +237,13 @@ socket.on('words_collection_started', (data) => {
     document.getElementById('playerWordInput').disabled = false;
     document.getElementById('playerHintInput').disabled = false;
     document.getElementById('submitWordBtn').disabled = false;
-    document.getElementById('wordSubmissionStatus').textContent = `Players remaining: ${gameState.players.length}`;
+    updateWordSubmissionStatus(gameState.players.length);
 });
 
 socket.on('word_submitted', (data) => {
     // Everyone sees submission progress
-    const status = document.getElementById('wordSubmissionStatus');
-    if (!status) {
-        return;
-    }
-
     const remaining = Math.max(data.total - data.submitted, 0);
-    status.textContent = `Players remaining: ${remaining}`;
+    updateWordSubmissionStatus(remaining);
 });
 
 socket.on('round_ended', (data) => {

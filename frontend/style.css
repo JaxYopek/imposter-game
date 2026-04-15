@@ -353,6 +353,20 @@ select:focus {
     display: none;
 }
 
+#wordSubmissionStatus {
+    margin: 12px 0 18px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    background: #142131;
+    border: 1px solid #263952;
+    color: #d9e5f7;
+}
+
+#wordSubmissionStatus .remaining-count {
+    font-weight: 800;
+    color: #ffd58f;
+}
+
 #hostSection {
     background: #142131;
     padding: 20px;
