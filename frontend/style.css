@@ -1,3 +1,19 @@
+@import url('https://fonts.googleapis.com/css2?family=Bungee&family=Chakra+Petch:wght@400;500;600;700&display=swap');
+
+:root {
+    --bg-base: #0c1118;
+    --bg-accent: #161f2c;
+    --card-bg: #101826;
+    --card-edge: #253247;
+    --text-main: #eef3ff;
+    --text-muted: #b2bfd6;
+    --primary: #ff9f1a;
+    --primary-strong: #ff7f11;
+    --danger: #f45d5d;
+    --surface-soft: #172233;
+    --surface-soft-2: #1d2a3d;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -13,13 +29,17 @@ body {
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
-    background: #667eea;
+    font-family: 'Chakra Petch', 'Segoe UI', Arial, sans-serif;
+    background:
+        radial-gradient(circle at 10% 15%, rgba(255, 159, 26, 0.15), transparent 38%),
+        radial-gradient(circle at 85% 0%, rgba(89, 126, 255, 0.18), transparent 42%),
+        linear-gradient(145deg, #0b1017 0%, #101826 55%, #121d2b 100%);
     min-height: 100vh;
     display: flex;
     align-items: flex-start;
     justify-content: center;
     overflow-y: auto;
+    color: var(--text-main);
 }
 
 .container {
@@ -37,40 +57,45 @@ body {
 }
 
 .card {
-    background: white;
+    background: linear-gradient(180deg, rgba(16, 24, 38, 0.97) 0%, rgba(12, 18, 29, 0.98) 100%);
     border-radius: 12px;
     padding: 40px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--card-edge);
+    box-shadow: 0 26px 70px rgba(0, 0, 0, 0.45);
 }
 
 h1 {
-    font-size: 2.5em;
+    font-family: 'Bungee', 'Chakra Petch', sans-serif;
+    font-size: 2.3em;
+    letter-spacing: 1px;
     margin-bottom: 30px;
     text-align: center;
-    color: #333;
+    color: #ffd58f;
+    text-transform: uppercase;
 }
 
 h2 {
     font-size: 1.8em;
     margin-bottom: 20px;
-    color: #333;
+    color: var(--text-main);
 }
 
 h3 {
     font-size: 1.2em;
     margin-bottom: 15px;
-    color: #555;
+    color: #d8e1f3;
 }
 
 .instructions {
-    background: #f0f7ff;
+    background: linear-gradient(180deg, rgba(29, 42, 61, 0.9) 0%, rgba(22, 32, 46, 0.95) 100%);
     padding: 16px 20px;
     border-radius: 6px;
     margin-bottom: 25px;
+    border: 1px solid #2f405a;
 }
 
 .instructions summary {
-    color: #667eea;
+    color: #ffd58f;
     font-size: 1.05em;
     font-weight: 700;
     cursor: pointer;
@@ -94,7 +119,7 @@ h3 {
 .instructions ol {
     margin: 12px 0 0;
     padding-left: 25px;
-    color: #555;
+    color: var(--text-muted);
     line-height: 1.8;
 }
 
@@ -106,15 +131,21 @@ h3 {
     width: 100%;
     padding: 12px;
     margin-bottom: 15px;
-    border: 2px solid #e0e0e0;
+    border: 2px solid #2a394f;
     border-radius: 6px;
     font-size: 1em;
     transition: border-color 0.3s;
+    background: var(--surface-soft);
+    color: var(--text-main);
+}
+
+.input::placeholder {
+    color: #8fa2c2;
 }
 
 .input:focus {
     outline: none;
-    border-color: #667eea;
+    border-color: var(--primary);
 }
 
 .input[type="select"],
@@ -122,17 +153,18 @@ select {
     width: 100%;
     padding: 12px;
     margin-bottom: 15px;
-    border: 2px solid #e0e0e0;
+    border: 2px solid #2a394f;
     border-radius: 6px;
     font-size: 1em;
-    background-color: white;
+    background-color: var(--surface-soft);
+    color: var(--text-main);
     cursor: pointer;
     transition: border-color 0.3s;
 }
 
 select:focus {
     outline: none;
-    border-color: #667eea;
+    border-color: var(--primary);
 }
 
 .checkbox-container {
@@ -151,7 +183,7 @@ select:focus {
 .checkbox-container label {
     cursor: pointer;
     font-size: 1em;
-    color: #333;
+    color: var(--text-main);
 }
 
 .input.uppercase {
@@ -182,23 +214,23 @@ select:focus {
 }
 
 .btn-primary {
-    background: #667eea;
-    color: white;
+    background: linear-gradient(180deg, var(--primary) 0%, var(--primary-strong) 100%);
+    color: #1b1406;
 }
 
 .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 12px 24px rgba(255, 127, 17, 0.35);
 }
 
 .btn-secondary {
-    background: #f0f0f0;
-    color: #333;
-    border: 2px solid #e0e0e0;
+    background: var(--surface-soft-2);
+    color: var(--text-main);
+    border: 2px solid #324663;
 }
 
 .btn-secondary:hover {
-    background: #e8e8e8;
+    background: #273953;
 }
 
 .mode-buttons .btn {
@@ -206,26 +238,26 @@ select:focus {
 }
 
 .mode-buttons .btn.mode-active {
-    background: #667eea;
-    color: #fff;
-    border-color: #4f67e8;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.25), 0 8px 16px rgba(79, 103, 232, 0.25);
+    background: linear-gradient(180deg, var(--primary) 0%, var(--primary-strong) 100%);
+    color: #1b1406;
+    border-color: #ffbe5c;
+    box-shadow: 0 0 0 3px rgba(255, 159, 26, 0.25), 0 8px 16px rgba(255, 127, 17, 0.25);
     transform: translateY(-1px);
 }
 
 .mode-buttons .btn.mode-active:hover {
-    background: #5b73e9;
+    background: linear-gradient(180deg, #ffad2f 0%, #ff8c22 100%);
 }
 
 .btn-danger {
-    background: #ff6b6b;
-    color: white;
+    background: linear-gradient(180deg, #f77373 0%, #e65252 100%);
+    color: #2b0808;
     width: 100%;
     margin-top: 20px;
 }
 
 .btn-danger:hover {
-    background: #ee5a52;
+    background: #eb5d5d;
 }
 
 .section {
@@ -237,7 +269,7 @@ select:focus {
 }
 
 .highlight {
-    color: #667eea;
+    color: #ffd58f;
     font-weight: bold;
     font-size: 1.2em;
 }
@@ -249,12 +281,14 @@ select:focus {
 
 .players-list li {
     padding: 12px;
-    background: #f5f5f5;
+    background: #172233;
     margin-bottom: 8px;
     border-radius: 6px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    color: var(--text-main);
+    border: 1px solid #27374f;
 }
 
 .players-list li.imposter {
@@ -264,18 +298,19 @@ select:focus {
 }
 
 .word-display {
-    background: #667eea;
-    color: white;
+    background: linear-gradient(145deg, #ff9f1a 0%, #ff7f11 100%);
+    color: #1c1408;
     padding: 60px 40px;
     border-radius: 12px;
     text-align: center;
     margin: 30px 0;
+    box-shadow: inset 0 0 0 1px rgba(255, 223, 177, 0.5);
 }
 
 .word-display h1 {
     font-size: 4em;
     margin: 0;
-    color: white;
+    color: #23170b;
 }
 
 .role-badge {
@@ -300,9 +335,9 @@ select:focus {
 }
 
 .hint-display {
-    background: #fff3cd;
-    border: 2px solid #ffc107;
-    color: #856404;
+    background: #2a3320;
+    border: 2px solid #d4b251;
+    color: #f6e8bb;
     padding: 16px;
     border-radius: 6px;
     margin: 20px 0;
@@ -319,10 +354,11 @@ select:focus {
 }
 
 #hostSection {
-    background: #f5f5f5;
+    background: #142131;
     padding: 20px;
     border-radius: 6px;
     margin-bottom: 20px;
+    border: 1px solid #263952;
 }
 
 #hostSection label {
