@@ -89,10 +89,11 @@
             <div class="card">
                 <h2>Submit Your Word</h2>
                 <p>Everyone must submit a word. The game will randomly choose one!</p>
+                <p id="wordSubmissionStatus">Players remaining: -</p>
                 
                 <input type="text" id="playerWordInput" placeholder="Enter a word" class="input">
                 <input type="text" id="playerHintInput" placeholder="Enter a hint (optional)" class="input">
-                <button onclick="submitWord()" class="btn btn-primary">Submit Word</button>
+                <button id="submitWordBtn" onclick="submitWord()" class="btn btn-primary">Submit Word</button>
             </div>
         </div>
 

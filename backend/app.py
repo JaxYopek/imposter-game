@@ -56,13 +56,13 @@ def validate_player_name(name):
     return bool(re.match(r'^[a-zA-Z0-9\s\-_]+$', name))
 
 def validate_word(word):
-    """Validate word: alphanumeric + spaces, max 30 chars"""
+    """Validate word: alphanumeric + spaces, apostrophes, dash/underscore, max 30 chars"""
     if not word or not isinstance(word, str):
         return False
     word = word.strip()
     if len(word) < 1 or len(word) > 30:
         return False
-    return bool(re.match(r'^[a-zA-Z0-9\s\-_]+$', word))
+    return bool(re.match(r"^[a-zA-Z0-9\s\-_\'’]+$", word))
 
 def validate_room_code(code):
     """Room codes are always 4 uppercase alphanumeric chars."""
@@ -189,19 +189,19 @@ def on_submit_word(data):
 
     if not validate_room_code(room_code):
         emit('error', {'message': 'Invalid room code'})
-        return
+        return {'ok': False, 'message': 'Invalid room code'}
     
     # Validate word
     if not validate_word(word):
-        emit('error', {'message': 'Invalid word'})
+        emit('error', {'message': 'Invalid word (letters/numbers/spaces/apostrophes only)'})
         logger.warning(f'Invalid word submission attempt: {word}')
-        return
+        return {'ok': False, 'message': 'Invalid word'}
     
     # Validate hint if provided
     if hint and not validate_word(hint):
-        emit('error', {'message': 'Invalid hint'})
+        emit('error', {'message': 'Invalid hint (letters/numbers/spaces/apostrophes only)'})
         logger.warning(f'Invalid hint submission attempt: {hint}')
-        return
+        return {'ok': False, 'message': 'Invalid hint'}
     
     if game.submit_word(room_code, player_id, word, hint):
         # Notify all players that a word was submitted
@@ -221,8 +221,10 @@ def on_submit_word(data):
             for pid, player_data in players:
                 view = game.get_player_view(room_code, pid)
                 emit('game_started', view, to=get_sid_for_player(room_code, pid))
+        return {'ok': True, 'submitted': submitted_count, 'total': total_count}
     else:
         emit('error', {'message': 'Failed to submit word'})
+        return {'ok': False, 'message': 'Failed to submit word'}
 
 @socketio.on('finalize_words')
 def on_finalize_words(data):

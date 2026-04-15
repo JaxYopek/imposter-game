@@ -15,6 +15,7 @@ let gameState = {
     roundNumber: 0,
     gameMode: null,  // 'category' or 'custom_words'
     wordSubmitted: false,
+    wordSubmitting: false,
     hintsEnabled: false,  // Whether hints are required for custom words
 };
 
@@ -129,16 +130,34 @@ function selectMode(mode) {
 }
 
 function submitWord() {
+    if (gameState.wordSubmitted || gameState.wordSubmitting) {
+        return;
+    }
+
     const word = document.getElementById('playerWordInput').value.trim();
     const hint = document.getElementById('playerHintInput').value.trim();
     if (!word) {
         alert('Please enter a word');
         return;
     }
-    socket.emit('submit_word', { room_code: gameState.roomCode, word, hint: hint || null });
-    gameState.wordSubmitted = true;
-    document.getElementById('playerWordInput').disabled = true;
-    document.getElementById('playerHintInput').disabled = true;
+
+    gameState.wordSubmitting = true;
+    const submitButton = document.getElementById('submitWordBtn');
+    submitButton.disabled = true;
+
+    socket.emit('submit_word', { room_code: gameState.roomCode, word, hint: hint || null }, (response) => {
+        gameState.wordSubmitting = false;
+
+        if (!response || !response.ok) {
+            submitButton.disabled = false;
+            return;
+        }
+
+        gameState.wordSubmitted = true;
+        document.getElementById('playerWordInput').disabled = true;
+        document.getElementById('playerHintInput').disabled = true;
+        submitButton.disabled = true;
+    });
 }
 
 function nextRound() {
@@ -190,21 +209,24 @@ socket.on('words_collection_started', (data) => {
     gameState.hintsEnabled = data.hints_enabled || false;
     switchScreen('wordSubmissionScreen');
     gameState.wordSubmitted = false;
+    gameState.wordSubmitting = false;
     document.getElementById('playerWordInput').value = '';
     document.getElementById('playerHintInput').value = '';
     document.getElementById('playerWordInput').disabled = false;
     document.getElementById('playerHintInput').disabled = false;
+    document.getElementById('submitWordBtn').disabled = false;
+    document.getElementById('wordSubmissionStatus').textContent = `Players remaining: ${gameState.players.length}`;
 });
 
 socket.on('word_submitted', (data) => {
-    // Host sees submission progress
+    // Everyone sees submission progress
     const status = document.getElementById('wordSubmissionStatus');
-    status.textContent = `${data.submitted}/${data.total} players submitted`;
-    
-    // If all players have submitted, show finalize button
-    if (data.submitted === data.total) {
-        document.getElementById('finalizeBtn').classList.remove('hidden');
+    if (!status) {
+        return;
     }
+
+    const remaining = Math.max(data.total - data.submitted, 0);
+    status.textContent = `Players remaining: ${remaining}`;
 });
 
 socket.on('round_ended', (data) => {
