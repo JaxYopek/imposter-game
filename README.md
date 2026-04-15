@@ -1,6 +1,6 @@
 # Imposter Game
 
-I created this simple web version of the "Imposter Game" to make it easy to play with my friends (without leaving anyone out!). I will host it soon so that you can play with your friends as well.
+I created this simple web version of the "Imposter Game" to make it easy to play with my friends (without leaving anyone out!). You can play it [here](https://imposter-game-3aac3a0a51cb.herokuapp.com)!
 
 ## Game Rules
 
