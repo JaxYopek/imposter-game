@@ -44,7 +44,7 @@ The frontend is served automatically by the Flask server. Just visit `http://loc
 
 ## How to Play
 
-1. **Create a Room**: Click "Create Room" and enter your name. You'll get a 6-character room code.
+1. **Create a Room**: Click "Create Room" and enter your name. You'll get a 4-character room code.
 2. **Other Players Join**: Other players enter the room code and their name.
 3. **Host Enters Word**: Once everyone has joined, the host enters a word and clicks "Start Game".
 4. **Play**: 

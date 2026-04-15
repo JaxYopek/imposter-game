@@ -69,6 +69,15 @@
                         
                         <button onclick="startGame('category')" class="btn btn-primary">Start Game</button>
                     </div>
+                    
+                    <div id="customWordsSection" class="section hidden">
+                        <div class="checkbox-container">
+                            <input type="checkbox" id="customHintsCheckbox">
+                            <label for="customHintsCheckbox">Require hints with words</label>
+                        </div>
+                        
+                        <button onclick="startGame('custom_words')" class="btn btn-primary">Start Game</button>
+                    </div>
                 </div>
                 
                 <button onclick="leaveRoom()" class="btn btn-danger">Leave Room</button>
@@ -82,6 +91,7 @@
                 <p>Everyone must submit a word. The game will randomly choose one!</p>
                 
                 <input type="text" id="playerWordInput" placeholder="Enter a word" class="input">
+                <input type="text" id="playerHintInput" placeholder="Enter a hint (optional)" class="input">
                 <button onclick="submitWord()" class="btn btn-primary">Submit Word</button>
             </div>
         </div>

@@ -64,6 +64,12 @@ def validate_word(word):
         return False
     return bool(re.match(r'^[a-zA-Z0-9\s\-_]+$', word))
 
+def validate_room_code(code):
+    """Room codes are always 4 uppercase alphanumeric chars."""
+    if not code or not isinstance(code, str):
+        return False
+    return bool(re.match(r'^[A-Z0-9]{4}$', code.strip().upper()))
+
 @app.route('/')
 def index():
     return send_from_directory(frontend_dir, 'index.html')
@@ -115,6 +121,10 @@ def on_join_room(data):
     room_code = data.get('room_code', '').upper().strip()
     player_name = data.get('name', 'Anonymous').strip()
     player_id = sessions.get(request.sid)
+
+    if not validate_room_code(room_code):
+        emit('error', {'message': 'Room code must be exactly 4 characters'})
+        return
     
     # Validate player name
     if not validate_player_name(player_name):
@@ -141,6 +151,10 @@ def on_start_game(data):
     mode = data.get('mode')  # 'category' or 'custom_words'
     category = data.get('category')
     hints_enabled = data.get('hints_enabled', False)
+
+    if not validate_room_code(room_code):
+        emit('error', {'message': 'Invalid room code'})
+        return
     
     if mode == 'category':
         if not category:
@@ -172,6 +186,10 @@ def on_submit_word(data):
     word = data.get('word', '').strip()
     hint = data.get('hint', '').strip() if data.get('hint') else None
     player_id = sessions.get(request.sid)
+
+    if not validate_room_code(room_code):
+        emit('error', {'message': 'Invalid room code'})
+        return
     
     # Validate word
     if not validate_word(word):
@@ -209,6 +227,10 @@ def on_submit_word(data):
 @socketio.on('finalize_words')
 def on_finalize_words(data):
     room_code = data.get('room_code')
+
+    if not validate_room_code(room_code):
+        emit('error', {'message': 'Invalid room code'})
+        return
     
     if game.finalize_custom_words(room_code):
         # Send game view to all players
@@ -222,6 +244,10 @@ def on_finalize_words(data):
 @socketio.on('next_round')
 def on_next_round(data):
     room_code = data.get('room_code')
+
+    if not validate_room_code(room_code):
+        emit('error', {'message': 'Invalid room code'})
+        return
     
     if game.next_round(room_code):
         emit('round_ended', {'status': 'waiting_for_host'}, to=room_code)
@@ -233,6 +259,10 @@ def on_next_round(data):
 def on_leave_room(data):
     room_code = data.get('room_code')
     player_id = sessions.get(request.sid)
+
+    if not validate_room_code(room_code):
+        emit('error', {'message': 'Invalid room code'})
+        return
     
     leave_room(room_code)
     game.remove_player(room_code, player_id)

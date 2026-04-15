@@ -2,13 +2,19 @@ import random
 import string
 from words import CATEGORIES
 
+ROOM_CODE_LENGTH = 4
+ROOM_CODE_ALPHABET = string.ascii_uppercase + string.digits
+
 class Game:
     def __init__(self):
         self.rooms = {}
     
     def create_room(self):
-        """Generate a random room code (6 characters for better entropy)"""
-        code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
+        """Generate a random room code"""
+        # Retry until a unique code is found to avoid collisions in active rooms.
+        code = ''.join(random.choices(ROOM_CODE_ALPHABET, k=ROOM_CODE_LENGTH))
+        while code in self.rooms:
+            code = ''.join(random.choices(ROOM_CODE_ALPHABET, k=ROOM_CODE_LENGTH))
         self.rooms[code] = {
             'players': {},
             'word': None,
@@ -102,7 +108,7 @@ class Game:
         
         return False
     
-    def submit_word(self, room_code, player_id, word):
+    def submit_word(self, room_code, player_id, word, hint=None):
         """Player submits a word for custom_words mode"""
         if room_code not in self.rooms:
             return False
@@ -111,7 +117,10 @@ class Game:
         if room['status'] != 'collecting_words':
             return False
         
-        room['submitted_words'][player_id] = word.strip()
+        room['submitted_words'][player_id] = {
+            'word': word.strip(),
+            'hint': hint.strip() if hint else None
+        }
         return True
     
     def finalize_custom_words(self, room_code):
@@ -124,8 +133,10 @@ class Game:
             return False
         
         # Pick random word from submissions
-        words = list(room['submitted_words'].values())
-        room['word'] = random.choice(words)
+        words_data = list(room['submitted_words'].values())
+        selected = random.choice(words_data)
+        room['word'] = selected['word']
+        room['hint'] = selected['hint']
         room['status'] = 'playing'
         
         # Select random imposter and start player

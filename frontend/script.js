@@ -15,6 +15,7 @@ let gameState = {
     roundNumber: 0,
     gameMode: null,  // 'category' or 'custom_words'
     wordSubmitted: false,
+    hintsEnabled: false,  // Whether hints are required for custom words
 };
 
 // Load categories on page load
@@ -84,19 +85,29 @@ function joinRoom() {
         alert('Please enter a room code');
         return;
     }
+    if (!/^[A-Z0-9]{4}$/.test(code)) {
+        alert('Room code must be exactly 4 characters');
+        return;
+    }
     
     gameState.playerName = name;
     socket.emit('join_room', { room_code: code, name });
 }
 
-function startGame() {
-    const category = document.getElementById('categorySelect').value;
-    if (!category) {
-        alert('Please select a category');
-        return;
+function startGame(mode) {
+    if (mode === 'category') {
+        const category = document.getElementById('categorySelect').value;
+        if (!category) {
+            alert('Please select a category');
+            return;
+        }
+        const hintsEnabled = document.getElementById('hintsCheckbox').checked;
+        socket.emit('start_game', { room_code: gameState.roomCode, mode: 'category', category, hints_enabled: hintsEnabled });
+    } else if (mode === 'custom_words') {
+        const hintsEnabled = document.getElementById('customHintsCheckbox').checked;
+        gameState.hintsEnabled = hintsEnabled;
+        socket.emit('start_game', { room_code: gameState.roomCode, mode: 'custom_words', hints_enabled: hintsEnabled });
     }
-    const hintsEnabled = document.getElementById('hintsCheckbox').checked;
-    socket.emit('start_game', { room_code: gameState.roomCode, mode: 'category', category, hints_enabled: hintsEnabled });
 }
 
 function selectMode(mode) {
@@ -104,27 +115,30 @@ function selectMode(mode) {
     
     // Update UI
     document.getElementById('categorySection').classList.add('hidden');
+    document.getElementById('customWordsSection').classList.add('hidden');
     
     if (mode === 'category') {
         document.getElementById('categorySection').classList.remove('hidden');
         document.getElementById('modeCategory').disabled = true;
         document.getElementById('modeCustom').disabled = false;
     } else if (mode === 'custom_words') {
+        document.getElementById('customWordsSection').classList.remove('hidden');
         document.getElementById('modeCustom').disabled = true;
         document.getElementById('modeCategory').disabled = false;
-        socket.emit('start_game', { room_code: gameState.roomCode, mode: 'custom_words' });
     }
 }
 
 function submitWord() {
     const word = document.getElementById('playerWordInput').value.trim();
+    const hint = document.getElementById('playerHintInput').value.trim();
     if (!word) {
         alert('Please enter a word');
         return;
     }
-    socket.emit('submit_word', { room_code: gameState.roomCode, word });
+    socket.emit('submit_word', { room_code: gameState.roomCode, word, hint: hint || null });
     gameState.wordSubmitted = true;
     document.getElementById('playerWordInput').disabled = true;
+    document.getElementById('playerHintInput').disabled = true;
 }
 
 function nextRound() {
@@ -173,10 +187,13 @@ socket.on('game_started', (data) => {
 
 socket.on('words_collection_started', (data) => {
     // All players (including host) see the word submission screen
+    gameState.hintsEnabled = data.hints_enabled || false;
     switchScreen('wordSubmissionScreen');
     gameState.wordSubmitted = false;
     document.getElementById('playerWordInput').value = '';
+    document.getElementById('playerHintInput').value = '';
     document.getElementById('playerWordInput').disabled = false;
+    document.getElementById('playerHintInput').disabled = false;
 });
 
 socket.on('word_submitted', (data) => {
@@ -195,10 +212,12 @@ socket.on('round_ended', (data) => {
     updateHostSection();
     document.getElementById('categorySelect').value = '';
     document.getElementById('hintsCheckbox').checked = false;
+    document.getElementById('customHintsCheckbox').checked = false;
     gameState.gameMode = null;
     gameState.wordSubmitted = false;
     gameState.currentHint = null;
     gameState.isStartPlayer = false;
+    gameState.hintsEnabled = false;
 });
 
 // Update functions
