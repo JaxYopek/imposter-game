@@ -17,14 +17,15 @@ body {
     background: #667eea;
     min-height: 100vh;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
+    overflow-y: auto;
 }
 
 .container {
     width: 100%;
     max-width: 600px;
-    padding: 20px;
+    padding: 28px 20px 48px;
 }
 
 .screen {
@@ -63,18 +64,35 @@ h3 {
 
 .instructions {
     background: #f0f7ff;
-    padding: 20px;
+    padding: 16px 20px;
     border-radius: 6px;
     margin-bottom: 25px;
 }
 
-.instructions h3 {
-    margin-top: 0;
+.instructions summary {
     color: #667eea;
+    font-size: 1.05em;
+    font-weight: 700;
+    cursor: pointer;
+    list-style: none;
+}
+
+.instructions summary::-webkit-details-marker {
+    display: none;
+}
+
+.instructions summary::after {
+    content: '▾';
+    float: right;
+    transition: transform 0.2s ease;
+}
+
+.instructions[open] summary::after {
+    transform: rotate(180deg);
 }
 
 .instructions ol {
-    margin: 0;
+    margin: 12px 0 0;
     padding-left: 25px;
     color: #555;
     line-height: 1.8;
@@ -181,6 +199,22 @@ select:focus {
 
 .btn-secondary:hover {
     background: #e8e8e8;
+}
+
+.mode-buttons .btn {
+    border-width: 2px;
+}
+
+.mode-buttons .btn.mode-active {
+    background: #667eea;
+    color: #fff;
+    border-color: #4f67e8;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.25), 0 8px 16px rgba(79, 103, 232, 0.25);
+    transform: translateY(-1px);
+}
+
+.mode-buttons .btn.mode-active:hover {
+    background: #5b73e9;
 }
 
 .btn-danger {
@@ -299,7 +333,7 @@ select:focus {
 
 @media (max-width: 600px) {
     .container {
-        padding: 10px;
+        padding: 16px 10px 30px;
     }
     
     .card {

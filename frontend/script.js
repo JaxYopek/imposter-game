@@ -113,6 +113,7 @@ function startGame(mode) {
 
 function selectMode(mode) {
     gameState.gameMode = mode;
+    updateModeButtonsState();
     
     // Update UI
     document.getElementById('categorySection').classList.add('hidden');
@@ -120,13 +121,23 @@ function selectMode(mode) {
     
     if (mode === 'category') {
         document.getElementById('categorySection').classList.remove('hidden');
-        document.getElementById('modeCategory').disabled = true;
-        document.getElementById('modeCustom').disabled = false;
     } else if (mode === 'custom_words') {
         document.getElementById('customWordsSection').classList.remove('hidden');
-        document.getElementById('modeCustom').disabled = true;
-        document.getElementById('modeCategory').disabled = false;
     }
+}
+
+function updateModeButtonsState() {
+    const modeCategoryButton = document.getElementById('modeCategory');
+    const modeCustomButton = document.getElementById('modeCustom');
+
+    const categorySelected = gameState.gameMode === 'category';
+    const customSelected = gameState.gameMode === 'custom_words';
+
+    modeCategoryButton.classList.toggle('mode-active', categorySelected);
+    modeCustomButton.classList.toggle('mode-active', customSelected);
+
+    modeCategoryButton.setAttribute('aria-pressed', categorySelected ? 'true' : 'false');
+    modeCustomButton.setAttribute('aria-pressed', customSelected ? 'true' : 'false');
 }
 
 function submitWord() {
@@ -230,16 +241,16 @@ socket.on('word_submitted', (data) => {
 });
 
 socket.on('round_ended', (data) => {
-    switchScreen('waitingScreen');
-    updateHostSection();
-    document.getElementById('categorySelect').value = '';
-    document.getElementById('hintsCheckbox').checked = false;
-    document.getElementById('customHintsCheckbox').checked = false;
     gameState.gameMode = null;
     gameState.wordSubmitted = false;
     gameState.currentHint = null;
     gameState.isStartPlayer = false;
     gameState.hintsEnabled = false;
+    switchScreen('waitingScreen');
+    updateHostSection();
+    document.getElementById('categorySelect').value = '';
+    document.getElementById('hintsCheckbox').checked = false;
+    document.getElementById('customHintsCheckbox').checked = false;
 });
 
 // Update functions
@@ -262,8 +273,8 @@ function updateHostSection() {
         section.classList.remove('hidden');
         // Reset mode selection UI
         document.getElementById('categorySection').classList.add('hidden');
-        document.getElementById('modeCategory').disabled = false;
-        document.getElementById('modeCustom').disabled = false;
+        document.getElementById('customWordsSection').classList.add('hidden');
+        updateModeButtonsState();
     } else {
         section.classList.add('hidden');
     }

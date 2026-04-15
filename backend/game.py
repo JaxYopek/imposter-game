@@ -164,8 +164,9 @@ class Game:
             'status': room['status'],
         }
         
-        # Add hint for imposter if enabled
-        if is_imposter and room.get('hints_enabled') and room.get('hint'):
+        # In custom words mode, any provided hint should always be visible to the imposter.
+        should_show_hint = room.get('mode') == 'custom_words' or room.get('hints_enabled')
+        if is_imposter and should_show_hint and room.get('hint'):
             view['hint'] = room['hint']
         
         return view
