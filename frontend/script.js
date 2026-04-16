@@ -96,6 +96,12 @@ function joinRoom() {
 }
 
 function startGame(mode) {
+    // Check that there are at least 2 players
+    if (gameState.players.length < 2) {
+        alert('You need at least 3 players to start a game');
+        return;
+    }
+    
     if (mode === 'category') {
         const category = document.getElementById('categorySelect').value;
         if (!category) {
@@ -160,6 +166,12 @@ function submitWord() {
     const hint = document.getElementById('playerHintInput').value.trim();
     if (!word) {
         alert('Please enter a word');
+        return;
+    }
+    
+    // Check if hints are required
+    if (gameState.hintsEnabled && !hint) {
+        alert('A hint is required');
         return;
     }
 
@@ -237,6 +249,15 @@ socket.on('words_collection_started', (data) => {
     document.getElementById('playerWordInput').disabled = false;
     document.getElementById('playerHintInput').disabled = false;
     document.getElementById('submitWordBtn').disabled = false;
+    
+    // Update hint input placeholder based on whether hints are required
+    const hintInput = document.getElementById('playerHintInput');
+    if (gameState.hintsEnabled) {
+        hintInput.placeholder = 'Enter a hint';
+    } else {
+        hintInput.placeholder = 'Enter a hint (optional)';
+    }
+    
     updateWordSubmissionStatus(gameState.players.length);
 });
 

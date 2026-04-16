@@ -156,6 +156,12 @@ def on_start_game(data):
         emit('error', {'message': 'Invalid room code'})
         return
     
+    # Check that there are at least 3 players
+    room = game.get_room(room_code)
+    if not room or len(room['players']) < 3:
+        emit('error', {'message': 'You need at least 3 players to start a game'})
+        return
+    
     if mode == 'category':
         if not category:
             emit('error', {'message': 'Please select a category'})
@@ -196,6 +202,12 @@ def on_submit_word(data):
         emit('error', {'message': 'Invalid word (letters/numbers/spaces/apostrophes only)'})
         logger.warning(f'Invalid word submission attempt: {word}')
         return {'ok': False, 'message': 'Invalid word'}
+    
+    # Check if hints are required but not provided
+    room = game.get_room(room_code)
+    if room and room.get('hints_enabled') and not hint:
+        emit('error', {'message': 'A hint is required'})
+        return {'ok': False, 'message': 'Hint required'}
     
     # Validate hint if provided
     if hint and not validate_word(hint):
